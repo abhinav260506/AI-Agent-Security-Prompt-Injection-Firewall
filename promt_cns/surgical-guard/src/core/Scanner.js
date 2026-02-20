@@ -60,14 +60,8 @@ export class Scanner {
 
             // D. Text Redaction (Handled inside TextLocator on text extraction)
             if (node.nodeType === Node.TEXT_NODE) {
-                const originalText = node.nodeValue;
-                const redactedText = Sanitizer.redactor.redact(originalText);
-                if (redactedText !== originalText) {
-                    node.nodeValue = redactedText;
-                    if (node.parentElement) {
-                        node.parentElement.setAttribute('data-surgical-redacted', 'true');
-                    }
-                }
+                // Previously: Original text was proactively redacted here for all PII.
+                // Now: We only redact when processing actual matches later to not break safe emails.
             }
         };
 

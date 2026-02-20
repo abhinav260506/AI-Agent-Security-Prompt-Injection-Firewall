@@ -15,20 +15,15 @@ export const Sanitizer = {
      * @returns {string} - The sanitized text
      */
     sanitizeText(text, findings) {
-        // Step B: Entity Redaction (The "Mask")
-        // Always redact PII from the text first
-        let sanitizedText = this.redactor.redact(text);
+        // We only sanitize segments that have malicious directives, avoiding blanket PII redaction.
+        let sanitizedText = text;
 
         findings.forEach(finding => {
             if (finding.type === 'MALICIOUS_DIRECTIVE') {
                 const warningMsg = ` [🚫 BLOCKED: Unauthorized Command (${finding.subtype}) ] `;
-                // Try to find the match in the already redacted text
-                // Check if the match itself contained PII that is now gone
-
-                // Fallback: If we can't match perfectly due to redaction, we just append warning?
-                // Actually, simple replacement is risky if text changed.
-                // For now, simple replace on the *original* match might fail if redaction changed it.
-                // We'll stick to replacing the finding match if it still exists.
+                // Only redact PII within the malicious string segment before replacing it.
+                // Or frankly, the entire segment is replacing the directive anyway.
+                // We'll replace the full match with the warning.
                 if (sanitizedText.includes(finding.match)) {
                     sanitizedText = sanitizedText.replace(finding.match, warningMsg);
                 }
@@ -55,8 +50,11 @@ export const Sanitizer = {
             // 1. Get current content
             const originalText = range.toString();
 
-            // 2. Step B: Entity Redaction
-            const redactedText = this.redactor.redact(originalText);
+            // Previously: Step B: Entity Redaction was applied unconditionally.
+            // Now: Redaction is only needed if building a custom string or replacement.
+            // But since the *entire malicious range* gets replaced with a warning, redaction of original
+            // text inside it is unnecessary (it goes away entirely).
+            const redactedText = originalText;
 
             // 3. Prepare Warning
             let warningText = " [ 🚫 Dangerous Directive Neutralized ] ";
