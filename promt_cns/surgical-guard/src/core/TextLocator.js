@@ -10,8 +10,11 @@ export class TextLocator {
         this.root = rootNode;
         this.textSegments = [];
         this.fullText = "";
+        this.processNodeDuringTraversal = null;
+    }
 
-        this._buildMap(rootNode);
+    build() {
+        this._buildMap(this.root);
     }
 
     _buildMap(node) {
@@ -20,6 +23,13 @@ export class TextLocator {
     }
 
     _traverse(node) {
+        // Hook for single-pass processing
+        if (this.processNodeDuringTraversal) {
+            this.processNodeDuringTraversal(node);
+        }
+
+        if (node.nodeType === Node.COMMENT_NODE) return;
+
         if (node.nodeType === Node.TEXT_NODE) {
             const val = node.nodeValue;
             if (val) { // val can be empty string or whitespace

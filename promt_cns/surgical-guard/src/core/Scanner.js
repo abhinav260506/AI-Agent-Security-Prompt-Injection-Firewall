@@ -22,27 +22,57 @@ export class Scanner {
             sanitizedCount: 0
         };
 
-        // 0. Global Carrier Cleanup
-        this.cleanCarriers(rootNode);
-
-        // 0.5. Global PII Redaction (The Mask - Decoupled Step)
-        // We redact ALL emails/URLs immediately, before semantic analysis.
-        this.globalRedact(rootNode);
-
-        // 1. Scan for Hidden Text (DOM level - Local - Instant)
-        const allElements = rootNode.getElementsByTagName('*');
-        for (let el of allElements) {
-            const hiddenResult = HiddenTextDetector.scanNode(el);
-            if (hiddenResult) {
-                results.matches.push(hiddenResult);
-                Sanitizer.sanitizeNode(el, hiddenResult);
-                results.sanitizedCount++;
-            }
-        }
-
-
-        // 2. Text Analysis with TextLocator
+        // 1. Single-Pass DOM Traversal (Extracts Text + Finds Hidden/Carriers + Redacts)
         const locator = new TextLocator(rootNode);
+
+        // Pass the detector and sanitizer to the locator so it can process nodes while building text
+        locator.processNodeDuringTraversal = (node) => {
+            // A. Clean Carriers (Comments & malicious scripts)
+            if (node.nodeType === Node.COMMENT_NODE) {
+                node.remove();
+                return;
+            }
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SCRIPT' && node.type === 'text/plain') {
+                node.remove();
+                return;
+            }
+
+            // B. Hidden Text Detection
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const hiddenResult = HiddenTextDetector.scanNode(node);
+                if (hiddenResult) {
+                    results.matches.push(hiddenResult);
+                    Sanitizer.sanitizeNode(node, hiddenResult);
+                    results.sanitizedCount++;
+                }
+
+                // C. Attribute PII Redaction
+                if (node.tagName === 'A') {
+                    const href = node.getAttribute('href');
+                    if (href && (href.includes('mailto:') || href.includes('@'))) {
+                        node.removeAttribute('href');
+                        node.setAttribute('data-scrubbed-href', href);
+                        node.style.cursor = 'not-allowed';
+                        node.title = "Link disabled for safety";
+                    }
+                }
+            }
+
+            // D. Text Redaction (Handled inside TextLocator on text extraction)
+            if (node.nodeType === Node.TEXT_NODE) {
+                const originalText = node.nodeValue;
+                const redactedText = Sanitizer.redactor.redact(originalText);
+                if (redactedText !== originalText) {
+                    node.nodeValue = redactedText;
+                    if (node.parentElement) {
+                        node.parentElement.setAttribute('data-surgical-redacted', 'true');
+                    }
+                }
+            }
+        };
+
+        // Build the text map and run processNodeDuringTraversal
+        locator.build();
         const pageText = locator.getText();
 
         if (!pageText || pageText.trim().length === 0) return results;
@@ -144,101 +174,5 @@ export class Scanner {
         };
     }
 
-    /**
-     * Removes common hidden carriers of malicious instructions.
-     * - HTML Comments
-     * - <script type="text/plain">
-     */
-    cleanCarriers(rootNode) {
-        try {
-            // 1. Remove HTML Comments
-            // TreeWalker might fail on detached nodes in some browsers over extensions,
-            // but usually works if rootNode is an Element.
-            if (rootNode.nodeType === 1) { // Element
-                const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_COMMENT, null);
-                const comments = [];
-                while (walker.nextNode()) comments.push(walker.currentNode);
-                comments.forEach(c => c.remove());
-            }
-
-            // 2. Remove <script type="text/plain">
-            const scripts = rootNode.querySelectorAll('script[type="text/plain"]');
-            scripts.forEach(s => {
-                console.log("Surgical-Guard: Removed hidden script carrier.");
-                s.remove();
-            });
-        } catch (e) {
-            console.warn("Surgical-Guard: Carrier cleanup warning", e);
-        }
-    }
-
-    /**
-     * Globally redacts PII from the DOM before analysis.
-     * NOW: Walks Elements to scrub attributes (href) and TextNodes to mask content.
-     */
-    globalRedact(rootNode) {
-        try {
-            const walker = document.createTreeWalker(
-                rootNode,
-                NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
-                null
-            );
-
-            const nodesToUpdate = [];
-            while (walker.nextNode()) {
-                nodesToUpdate.push(walker.currentNode);
-            }
-
-            nodesToUpdate.forEach(node => {
-                // 1. Handle TEXT NODES
-                if (node.nodeType === 3) {
-                    const originalText = node.nodeValue;
-                    // Use Sanitizer's redactor with new placeholder
-                    // We need to override the default placeholder in PIIRedactor or handle it here?
-                    // PIIRedactor uses [PROTECTED_ENTITY]. User wants [UNVERIFIED_SENDER_REDACTED].
-                    // Let's modify PIIRedactor or post-process?
-                    // Better: modify PIIRedactor to accept a placeholder or just update it globally.
-                    // For speed, I will update PIIRedactor separately, but here I'll assume redactor works.
-
-                    // Actually, I should update PIIRedactor.js to use the new placeholder.
-                    // But for now, let's just use the redactor and rely on its logic,
-                    // or pass the placeholder if I update it.
-
-                    const redactedText = Sanitizer.redactor.redact(originalText);
-                    // We will update PIIRedactor to use [UNVERIFIED_SENDER_REDACTED] next.
-
-                    if (redactedText !== originalText) {
-                        node.nodeValue = redactedText;
-                        if (node.parentElement) {
-                            node.parentElement.setAttribute('data-surgical-redacted', 'true');
-                        }
-                    }
-                }
-
-                // 2. Handle ELEMENTS (Attribute Scrubbing)
-                if (node.nodeType === 1) {
-                    // Check for Link hrefs
-                    if (node.tagName === 'A') {
-                        const href = node.getAttribute('href');
-                        if (href && (href.includes('mailto:') || href.includes('@'))) {
-                            // High risk link
-                            console.log(`Surgical-Guard: Scrubbing dangerous link: ${href}`);
-                            node.removeAttribute('href');
-                            node.setAttribute('data-scrubbed-href', href); // Keep for audit? No, safety first.
-                            node.style.cursor = 'not-allowed';
-                            node.style.color = 'gray';
-                            node.style.textDecoration = 'line-through';
-                            node.title = "Link disabled for safety";
-
-                            // Also verify inner text if it was just the email
-                            // The text node walker will handle the inner text, but we ensure visuals here.
-                        }
-                    }
-                }
-            });
-            console.log(`Surgical-Guard: Global Redaction check complete on ${nodesToUpdate.length} nodes.`);
-        } catch (e) {
-            console.error("Surgical-Guard: Global Redaction failed", e);
-        }
-    }
+    // Combined into Single Pass Traversal in scanPage
 }

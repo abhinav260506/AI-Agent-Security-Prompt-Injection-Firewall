@@ -88,9 +88,11 @@ export const Sanitizer = {
             span.title = titleText;
             span.setAttribute('data-surgical-sanitized', 'true');
 
-            // Set content: Redacted text + Warning
-            // If original text was just an email, redactedText is "[PROTECTED_ENTITY]".
-            span.textContent = redactedText !== originalText ? redactedText : warningText;
+            // Set content: STRICT BLOCKING 
+            // If a range is flagged as a Malicious Directive or Context Hijack, 
+            // we must replace the *entire* instruction block with the warning banner.
+            // Previously, it would only mask emails but keep the malicious command readable!
+            span.textContent = warningText;
 
             // Sanitize: Delete content and insert new span
             range.deleteContents();

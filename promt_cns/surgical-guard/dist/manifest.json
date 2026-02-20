@@ -22,12 +22,12 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content-script.js-loader-12VhebAv.js"
+        "assets/content-script.js-loader-QRRs9gRa.js"
       ],
       "matches": [
         "<all_urls>"
       ],
-      "run_at": "document_end"
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
@@ -37,7 +37,7 @@
       ],
       "resources": [
         "assets/DirectiveScanner-BBzwnKX8.js",
-        "assets/content-script.js-BPT74wO6.js"
+        "assets/content-script.js-DseeBEkT.js"
       ],
       "use_dynamic_url": false
     }

@@ -77,7 +77,7 @@ function removeShield() {
 }
 
 
-async function runGuard(isSilent = false) {
+async function runGuard(isSilent = false, specificNodes = null) {
     console.log(`Surgical-Guard: Scanning page... (Silent: ${isSilent})`);
 
     // 1. ACTIVATE SHIELD (Only if NOT silent)
@@ -91,19 +91,19 @@ async function runGuard(isSilent = false) {
     // Scope detection:
     let targetNodes = [];
 
-    // Gmail detection (heuristic)
-    if (window.location.hostname.includes('mail.google.com')) {
-        // Target: 
-        // 1. Read Mode (.a3s)
-        // 2. Write Mode Quoted Text (.gmail_quote, .im)
-        // 3. Headers: Subject (h2.hP) & Sender (span.gD)
-        // 4. Inbox: Snippet (span.y2) & Subject (span.bog)
-        const emailBodies = document.querySelectorAll('.a3s, .gmail_quote, .im, h2.hP, span.gD, span.y2, span.bog');
-        if (emailBodies.length > 0) {
-            targetNodes = Array.from(emailBodies);
-        }
+    if (specificNodes && specificNodes.length > 0) {
+        // Targeted Scan (from MutationObserver)
+        targetNodes = specificNodes;
     } else {
-        targetNodes = [document.body];
+        // Full Page / Heuristic Scan (Manual or Initial Load)
+        if (window.location.hostname.includes('mail.google.com')) {
+            const emailBodies = document.querySelectorAll('.a3s, .gmail_quote, .im, h2.hP, span.gD, span.y2, span.bog');
+            if (emailBodies.length > 0) {
+                targetNodes = Array.from(emailBodies);
+            }
+        } else {
+            targetNodes = [document.body];
+        }
     }
 
     // Aggregate results from all targets
@@ -115,46 +115,11 @@ async function runGuard(isSilent = false) {
     try {
         // Process nodes
         for (const node of targetNodes) {
-            // EVACUATION: Physically remove content so AI cannot see it.
-            // We use a DocumentFragment to move nodes out of the live DOM.
-            const originalFragment = document.createDocumentFragment();
-
-            // Move children (Preserving event listeners/state)
-            // If node is body, be careful not to remove our own Shield!
-            const children = Array.from(node.childNodes);
-            for (const child of children) {
-                // Skip the Shield if it's in the body
-                if (child.id === 'surgical-guard-shield') continue;
-                originalFragment.appendChild(child);
-            }
-
-            // Show Placeholder in the live DOM (so user knows what's happening)
-            const placeholder = document.createElement('div');
-            placeholder.className = 'surgical-guard-placeholder';
-            placeholder.innerText = '🛡️ Surgical-Guard: Analyzing content...';
-            placeholder.style.cssText = 'padding: 20px; color: #666; font-family: sans-serif; background: #f9f9f9; border: 1px dashed #ccc; margin: 10px; border-radius: 8px; text-align: center;';
-            node.appendChild(placeholder);
-
-            // Create a detached wrapper for scanning (Scanner needs an Element, not Fragment)
-            const detachedWrapper = document.createElement('div');
-            detachedWrapper.appendChild(originalFragment);
-
-            // SCAN the Detached Wrapper
-            // The Scanner and Sanitizer will modify 'detachedWrapper' in-place.
-            const nodeResults = await scanner.scanPage(detachedWrapper);
+            // No DOM Evacuation needed. Scan the live node directly.
+            // This prevents layout thrashing and broken event listeners.
+            const nodeResults = await scanner.scanPage(node);
             results.matches.push(...nodeResults.matches);
             results.sanitizedCount += nodeResults.sanitizedCount;
-
-            // RESTORE
-            // 1. Remove Placeholder
-            if (placeholder.parentNode === node) {
-                node.removeChild(placeholder);
-            }
-
-            // 2. Put back the (now sanitized) content
-            while (detachedWrapper.firstChild) {
-                node.appendChild(detachedWrapper.firstChild);
-            }
         }
 
         if (results.matches.length > 0) {
@@ -256,58 +221,47 @@ document.addEventListener('copy', (e) => {
 
 // Dynamic Content Observer (for Gmail/SPAs)
 let timeoutId = null;
+let pendingMutations = new Set(); // Store Nodes that changed
+
 const observer = new MutationObserver((mutations) => {
     try {
-        if (!isScanningActive) return;
-        if (isSanitizing) return;
+        if (!isScanningActive || isSanitizing) return;
 
-        if (timeoutId) clearTimeout(timeoutId);
+        let shouldDebounce = false;
 
-        // SMART DEBOUNCE LOGIC
-        // If we detect changes in Gmail email body (.a3s) or high-priority areas, we scan faster.
-        let debounceTime = 500; // Default lowered from 3000ms
-
-        // Check if mutation affects email body or quoted text or headers or inbox
-        const isTargetDetection = mutations.some(m => {
-            // Handle Text Nodes (nodeType 3) by checking parent
-            if (!m.target) return false;
+        mutations.forEach(m => {
+            if (!m.target) return;
             const target = m.target.nodeType === 1 ? m.target : m.target.parentElement;
-            return target && target.closest && (
-                target.closest('.a3s') ||
-                target.closest('.gmail_quote') ||
-                target.closest('.im') ||
-                target.closest('.hP') ||
-                target.closest('.gD') ||
-                target.closest('.y2') ||
-                target.closest('.bog')
-            );
+            if (target && target.closest) {
+                // If the mutation is within our targets, add the top-most target container to avoid duplicate nested scans
+                const emailContainer = target.closest('.a3s, .gmail_quote, .im, .hP, .gD, .y2, .bog');
+                if (emailContainer) {
+                    pendingMutations.add(emailContainer);
+                    shouldDebounce = true;
+                } else if (!window.location.hostname.includes('mail.google.com')) {
+                    pendingMutations.add(target);
+                    shouldDebounce = true;
+                }
+            }
         });
 
-        if (isTargetDetection) {
-            console.log("Surgical-Guard: Immediate scan triggered for Content/Quote.");
+        if (shouldDebounce) {
             if (timeoutId) clearTimeout(timeoutId);
-            // Run immediately (microtask)
             timeoutId = setTimeout(async () => {
+                if (document.hidden || pendingMutations.size === 0) return;
+
+                // Get nodes and clear the queue
+                const nodesToScan = Array.from(pendingMutations);
+                pendingMutations.clear();
+
                 try {
-                    if (document.hidden) return;
-                    await runGuard(true);
+                    await runGuard(true, nodesToScan);
                 } catch (e) {
                     console.error("Surgical-Guard: Scan failed safely", e);
                 }
-            }, 0); // 0ms delay
-            return;
+            }, 500);
         }
 
-        // Debounce scan (standard persistence)
-        timeoutId = setTimeout(async () => {
-            try {
-                if (document.hidden) return;
-                // Silent Scan for background updates
-                await runGuard(true);
-            } catch (e) {
-                console.error("Surgical-Guard: Scan failed safely", e);
-            }
-        }, debounceTime);
     } catch (err) {
         console.error("Surgical-Guard: Critical Observer Error", err);
     }

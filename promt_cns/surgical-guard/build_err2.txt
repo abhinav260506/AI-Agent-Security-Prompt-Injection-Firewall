@@ -1,0 +1,100 @@
+﻿
+> surgical-guard@0.0.0 build
+> vite build
+
+node.exe : [33mplugin 
+'vite:obfuscatefiles' 
+uses deprecated 
+'enforce' option. Use 
+'order' option 
+instead.[39m
+At C:\Program Files\nod
+ejs\npm.ps1:29 char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([33mplugin '   
+ vi...n instead.[3    
+9m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[33mplugin 
+'vite:obfuscatefiles' 
+uses deprecated 
+'transform' option. 
+Use 'handler' option 
+instead.[39m
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 75 modules transformed.
+node_modules/onnxruntim
+e-web/dist/ort-web.min.
+js (6:62546): Use of 
+eval in "node_modules/o
+nnxruntime-web/dist/ort
+-web.min.js" is 
+strongly discouraged 
+as it poses security 
+risks and may cause 
+issues with 
+minification.
+rendering chunks...
+
+Obfuscate files
+Obfuscating assets/crx-manifest.js-Cwm7Meh4.js...
+Obfuscating assets/content-script.js-DZvGAf2d.js...
+Obfuscating assets/service-worker.js-CvKELpeu.js...
+Obfuscating assets/DirectiveScanner-BBzwnKX8.js...
+Obfuscating assets/index.html-DwcxN1bG.js...
+Obfuscate done
+[31mx[39m Build 
+failed in 17.50s
+[31merror during 
+build:
+[31m[crx:manifest-post
+] Unexpected token 
+'w', "wA9Q" is not 
+valid JSON[31m
+    at JSON.parse 
+(<anonymous>)
+    at 
+Object.decodeManifest (
+file:///C:/Users/abhin/
+Downloads/AI-Agent-Secu
+rity-Prompt-Injection-F
+irewall-main/AI-Agent-S
+ecurity-Prompt-Injectio
+n-Firewall-main/promt_c
+ns/surgical-guard/node_
+modules/@crxjs/vite-plu
+gin/dist/index.mjs:87:2
+1)
+    at 
+Object.generateBundle (
+file:///C:/Users/abhin/
+Downloads/AI-Agent-Secu
+rity-Prompt-Injection-F
+irewall-main/AI-Agent-S
+ecurity-Prompt-Injectio
+n-Firewall-main/promt_c
+ns/surgical-guard/node_
+modules/@crxjs/vite-plu
+gin/dist/index.mjs:1690
+:40)
+    at file:///C:/Users
+/abhin/Downloads/AI-Age
+nt-Security-Prompt-Inje
+ction-Firewall-main/AI-
+Agent-Security-Prompt-I
+njection-Firewall-main/
+promt_cns/surgical-guar
+d/node_modules/rollup/d
+ist/es/shared/node-entr
+y.js:22548:40[39m
+

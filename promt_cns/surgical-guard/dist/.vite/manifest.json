@@ -1,8 +1,8 @@
 {
-  "../../../../../@crx/manifest": {
-    "file": "assets/crx-manifest.js-uEypxnh4.js",
+  "../../../../../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-Cwm7Meh4.js",
     "name": "crx-manifest.js",
-    "src": "../../../../../@crx/manifest",
+    "src": "../../../../../../../@crx/manifest",
     "isEntry": true
   },
   "_DirectiveScanner-BBzwnKX8.js": {
@@ -10,20 +10,20 @@
     "name": "DirectiveScanner"
   },
   "content-script.js-loader.js": {
-    "file": "assets/content-script.js-loader-12VhebAv.js",
+    "file": "assets/content-script.js-loader-QRRs9gRa.js",
     "src": "content-script.js-loader.js"
   },
   "index.html": {
-    "file": "assets/index.html-D4yNuBFd.js",
+    "file": "assets/index.html-Dcu8pIF5.js",
     "name": "index.html",
     "src": "index.html",
     "isEntry": true,
     "css": [
-      "assets/index-Bvndwtvi.css"
+      "assets/index-Pf6-1BwF.css"
     ]
   },
   "src/background/service-worker.js": {
-    "file": "assets/service-worker.js-CvKELpeu.js",
+    "file": "assets/service-worker.js-DSQcmIXM.js",
     "name": "service-worker.js",
     "src": "src/background/service-worker.js",
     "isEntry": true,
@@ -32,7 +32,7 @@
     ]
   },
   "src/content/content-script.js": {
-    "file": "assets/content-script.js-BPT74wO6.js",
+    "file": "assets/content-script.js-DseeBEkT.js",
     "name": "content-script.js",
     "src": "src/content/content-script.js",
     "isEntry": true,

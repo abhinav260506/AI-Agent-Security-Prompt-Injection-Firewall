@@ -1,0 +1,105 @@
+﻿
+> surgical-guard@0.0.0 build
+> vite build
+
+node.exe : [31mfailed 
+to load config from C:\
+Users\abhin\Downloads\A
+I-Agent-Security-Prompt
+-Injection-Firewall-mai
+n\AI-Agent-Security-Pro
+mpt-Injection-Firewall-
+main\promt_cns\surgical
+-guard\vite.config.js[
+39m
+At C:\Program Files\nod
+ejs\npm.ps1:29 char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31mfailed t   
+ o ....config.js[3    
+9m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[31merror during 
+build:
+TypeError: obfuscator 
+is not a function
+    at file:///C:/Users
+/abhin/Downloads/AI-Age
+nt-Security-Prompt-Inje
+ction-Firewall-main/AI-
+Agent-Security-Prompt-I
+njection-Firewall-main/
+promt_cns/surgical-guar
+d/vite.config.js.timest
+amp-1771608842862-8bde7
+d051f217.mjs:47:5
+    at ModuleJob.run (n
+ode:internal/modules/es
+m/module_job:268:25)
+    at onImport.tracePr
+omise.__proto__ (node:i
+nternal/modules/esm/loa
+der:543:26)
+    at loadConfigFromBu
+ndledFile (file:///C:/U
+sers/abhin/Downloads/AI
+-Agent-Security-Prompt-
+Injection-Firewall-main
+/AI-Agent-Security-Prom
+pt-Injection-Firewall-m
+ain/promt_cns/surgical-
+guard/node_modules/vite
+/dist/node/chunks/dep-B
+K3b2jBa.js:66975:15)
+    at 
+loadConfigFromFile (fil
+e:///C:/Users/abhin/Dow
+nloads/AI-Agent-Securit
+y-Prompt-Injection-Fire
+wall-main/AI-Agent-Secu
+rity-Prompt-Injection-F
+irewall-main/promt_cns/
+surgical-guard/node_mod
+ules/vite/dist/node/chu
+nks/dep-BK3b2jBa.js:668
+16:24)
+    at resolveConfig (f
+ile:///C:/Users/abhin/D
+ownloads/AI-Agent-Secur
+ity-Prompt-Injection-Fi
+rewall-main/AI-Agent-Se
+curity-Prompt-Injection
+-Firewall-main/promt_cn
+s/surgical-guard/node_m
+odules/vite/dist/node/c
+hunks/dep-BK3b2jBa.js:6
+6416:24)
+    at build (file:///C
+:/Users/abhin/Downloads
+/AI-Agent-Security-Prom
+pt-Injection-Firewall-m
+ain/AI-Agent-Security-P
+rompt-Injection-Firewal
+l-main/promt_cns/surgic
+al-guard/node_modules/v
+ite/dist/node/chunks/de
+p-BK3b2jBa.js:65503:18)
+    at CAC.<anonymous> 
+(file:///C:/Users/abhin
+/Downloads/AI-Agent-Sec
+urity-Prompt-Injection-
+Firewall-main/AI-Agent-
+Security-Prompt-Injecti
+on-Firewall-main/promt_
+cns/surgical-guard/node
+_modules/vite/dist/node
+/cli.js:829:5)[39m

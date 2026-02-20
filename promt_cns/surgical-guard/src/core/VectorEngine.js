@@ -16,6 +16,10 @@ class VectorEngineService {
         this.pipe = null;
         this.loadingPromise = null;
         this.modelName = 'Xenova/all-MiniLM-L6-v2';
+
+        // LRU Cache for Vector Embeddings
+        this.cache = new Map();
+        this.MAX_CACHE_SIZE = 500;
     }
 
     /**
@@ -31,8 +35,14 @@ class VectorEngineService {
 
         this.loadingPromise = (async () => {
             try {
-                this.pipe = await pipeline('feature-extraction', this.modelName);
-                console.log("VectorEngine: Model loaded successfully.");
+                // Request WebGPU if available, fallback to WASM
+                const options = {
+                    device: 'webgpu',
+                    dtype: 'fp32' // Or fp16 if preferred
+                };
+
+                this.pipe = await pipeline('feature-extraction', this.modelName, options);
+                console.log("VectorEngine: Model loaded successfully (WebGPU enabled).");
                 return this.pipe;
             } catch (error) {
                 console.error("VectorEngine: Failed to load model.", error);
@@ -50,15 +60,34 @@ class VectorEngineService {
      * @returns {Float32Array}
      */
     async vectorize(text) {
+        if (!text) return null;
+
+        // 1. Check Cache
+        if (this.cache.has(text)) {
+            // Move to end (marks as most recently used)
+            const cachedVector = this.cache.get(text);
+            this.cache.delete(text);
+            this.cache.set(text, cachedVector);
+            return cachedVector;
+        }
+
         const extractor = await this.init();
 
-        // Compute embedding
+        // 2. Compute embedding
         // pooling: 'mean' -> averages token vectors to get sentence vector
         // normalize: true -> L2 normalization for cosine similarity
         const output = await extractor(text, { pooling: 'mean', normalize: true });
+        const vectorData = output.data;
 
-        // output.data is a Float32Array
-        return output.data;
+        // 3. Update Cache
+        this.cache.set(text, vectorData);
+        if (this.cache.size > this.MAX_CACHE_SIZE) {
+            // Delete oldest (first item in Map iteration order)
+            const firstKey = this.cache.keys().next().value;
+            this.cache.delete(firstKey);
+        }
+
+        return vectorData;
     }
 
     /**
