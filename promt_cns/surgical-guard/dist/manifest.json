@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content-script.js-loader-DnlaVQgE.js"
+        "assets/content-script.js-loader-DKMRKyW3.js"
       ],
       "matches": [
         "<all_urls>"
@@ -36,8 +36,8 @@
         "<all_urls>"
       ],
       "resources": [
-        "assets/DirectiveScanner-BBzwnKX8.js",
-        "assets/content-script.js-BWDHRDrE.js"
+        "assets/DirectiveScanner-uQNjlNut.js",
+        "assets/content-script.js-B-T3voip.js"
       ],
       "use_dynamic_url": false
     }

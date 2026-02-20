@@ -49,12 +49,20 @@ export class TextLocator {
         }
 
         if (node.nodeType === Node.ELEMENT_NODE) {
-            const style = window.getComputedStyle(node);
+            const tagName = node.tagName.toUpperCase();
 
-            // Skip invisible
-            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+            // 1. Explicitly ignore infrastructure tags
+            // We must NOT pull text from scripts or styles.
+            if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK', 'META', 'HEAD', 'TITLE', 'SVG'].includes(tagName)) {
                 return;
             }
+
+            const style = window.getComputedStyle(node);
+
+            // Previously we skipped all invisible nodes (display: none).
+            // BUT AI Agents read `element.textContent`, which extracts text from hidden nodes too! (e.g., hidden email quotes)
+            // If they are hidden, we must still sanitize them!
+            // So we DO NOT return here, we proceed to traverse their children.
 
             const isBlock = this._isBlock(style.display);
 

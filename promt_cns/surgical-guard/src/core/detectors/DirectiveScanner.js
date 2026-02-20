@@ -51,15 +51,41 @@ export const DirectiveScanner = {
             let match;
 
             while ((match = re.exec(text)) !== null) {
+                // Expand the match boundaries to capture the full context.
+                // In HTML, a single `\n` might just be a `<br>` tag or a new `<div>` mid-sentence.
+                // We expand until we hit a double newline `\n\n` (actual new paragraph)
+                // or just take a generous buffer of up to 200 characters in either direction
+                // to thoroughly nuke the payload.
+
+                let startIndex = match.index;
+                let charsLookedBack = 0;
+                while (startIndex > 0 && charsLookedBack < 150) {
+                    if (text[startIndex - 1] === '\n' && text[startIndex - 2] === '\n') {
+                        break; // Stop at double newline
+                    }
+                    startIndex--;
+                    charsLookedBack++;
+                }
+
+                let endIndex = match.index + match[0].length;
+                let charsLookedForward = 0;
+                while (endIndex < text.length && charsLookedForward < 250) {
+                    if (text[endIndex] === '\n' && text[endIndex + 1] === '\n') {
+                        break; // Stop at double newline
+                    }
+                    endIndex++;
+                    charsLookedForward++;
+                }
+
                 findings.push({
                     detected: true,
                     type: 'MALICIOUS_DIRECTIVE',
                     subtype: pattern.name,
                     score: pattern.score,
                     reasoning: [`Detected high-risk phrase: "${pattern.name}"`],
-                    match: match[0],
-                    index: match.index,
-                    end: match.index + match[0].length
+                    match: text.substring(startIndex, endIndex),
+                    index: startIndex,
+                    end: endIndex
                 });
             }
         });

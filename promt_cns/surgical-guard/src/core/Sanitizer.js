@@ -134,6 +134,9 @@ export const Sanitizer = {
      */
     sanitizeNode(node, finding) {
         if (finding.type === 'HIDDEN_TEXT') {
+            // Delete the original hidden instruction so AI tools cannot read it
+            node.textContent = "[ 🚫 Hidden Prompt Injection Neutralized ]";
+
             node.style.display = 'block';
             node.style.visibility = 'visible';
             node.style.opacity = '1';
@@ -145,10 +148,6 @@ export const Sanitizer = {
 
             node.setAttribute('data-surgical-scanned', 'true');
             node.classList.add('surgical-guard-warning');
-
-            const warningParams = document.createElement('strong');
-            warningParams.innerText = "[HIDDEN CONTENT EXPOSED]: ";
-            node.prepend(warningParams);
 
             // Scrub attributes here too
             ['aria-label', 'title', 'alt'].forEach(attr => node.removeAttribute(attr));
