@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Surgical-Guard: Safe Page Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 40px;
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c7a7b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>Safe Content Verification</h1>
+        <p>This page contains normal, safe text. There are no malicious commands, hidden instructions, or context
+            hijacking attempts.</p>
+        <p>When you scan this page with Surgical-Guard, the popup should display a green <strong>"No threats
+                detected"</strong> message.</p>
+        <hr>
+        <p><em>"The quick brown fox jumps over the lazy dog."</em></p>
+    </div>
+</body>
+
+</html>
