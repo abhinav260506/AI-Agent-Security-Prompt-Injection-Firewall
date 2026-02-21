@@ -119,7 +119,7 @@ export class Scanner {
                             payload: { text: pageText }
                         }, (response) => {
                             if (chrome.runtime.lastError) {
-                                console.error("Surgical-Guard: Background error:", chrome.runtime.lastError);
+                                console.error("Surgical-Guard: Background error:", chrome.runtime.lastError.message || chrome.runtime.lastError);
                                 resolve({ findings: [] });
                                 return;
                             }
@@ -195,7 +195,7 @@ export class Scanner {
                         payload: { text: text }
                     }, (res) => {
                         if (chrome.runtime.lastError) {
-                            console.error("Surgical-Guard: processContent background error:", chrome.runtime.lastError);
+                            console.error("Surgical-Guard: processContent background error:", chrome.runtime.lastError.message || chrome.runtime.lastError);
                             resolve({ findings: [] });
                             return;
                         }

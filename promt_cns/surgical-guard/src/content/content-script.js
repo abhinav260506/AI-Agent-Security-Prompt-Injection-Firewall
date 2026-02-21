@@ -164,7 +164,7 @@ async function runGuard(isSilent = false, specificNodes = null) {
                         }
                     }, (response) => {
                         if (chrome.runtime.lastError) {
-                            console.error("Surgical-Guard: Background error on THREATS_DETECTED:", chrome.runtime.lastError);
+                            console.error("Surgical-Guard: Background error on THREATS_DETECTED:", chrome.runtime.lastError.message || chrome.runtime.lastError);
                         }
                     });
                 } catch (e) {
@@ -181,7 +181,7 @@ async function runGuard(isSilent = false, specificNodes = null) {
                         payload: { count: 0 }
                     }, (response) => {
                         if (chrome.runtime.lastError) {
-                            console.error("Surgical-Guard: Background error on SAFE:", chrome.runtime.lastError);
+                            console.error("Surgical-Guard: Background error on SAFE:", chrome.runtime.lastError.message || chrome.runtime.lastError);
                         }
                     });
                 } catch (e) {

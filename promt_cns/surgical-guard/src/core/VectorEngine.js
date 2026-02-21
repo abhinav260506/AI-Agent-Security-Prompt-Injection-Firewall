@@ -11,6 +11,15 @@ import { pipeline, env } from '@xenova/transformers';
 // env.allowLocalModels = false;
 // env.useBrowserCache = true;
 
+// FIX FOR EXTENSION SERVICE WORKERS:
+// Disable Web Workers and multithreading because Chrome Service Workers 
+// do not support Atomics or certain Web Worker instantiations cleanly yet.
+env.backends.onnx.wasm.numThreads = 1;
+env.backends.onnx.wasm.proxy = false;
+
+// Bypass local `new URL(...)` WASM resolution which breaks when javascript-obfuscator runs.
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/';
+
 class VectorEngineService {
     constructor() {
         this.pipe = null;

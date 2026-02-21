@@ -10,7 +10,7 @@
     "name": "DirectiveScanner"
   },
   "content-script.js-loader.js": {
-    "file": "assets/content-script.js-loader-CfV_lsgo.js",
+    "file": "assets/content-script.js-loader-CL9_GJ5d.js",
     "src": "content-script.js-loader.js"
   },
   "index.html": {
@@ -23,7 +23,7 @@
     ]
   },
   "src/background/service-worker.js": {
-    "file": "assets/service-worker.js-Dp43ShM7.js",
+    "file": "assets/service-worker.js-CCUYiMRr.js",
     "name": "service-worker.js",
     "src": "src/background/service-worker.js",
     "isEntry": true,
@@ -32,7 +32,7 @@
     ]
   },
   "src/content/content-script.js": {
-    "file": "assets/content-script.js-R7Ohzt8m.js",
+    "file": "assets/content-script.js-DhFdFGxF.js",
     "name": "content-script.js",
     "src": "src/content/content-script.js",
     "isEntry": true,
