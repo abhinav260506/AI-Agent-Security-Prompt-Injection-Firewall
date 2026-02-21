@@ -19,6 +19,9 @@
         "service_worker": "src/background/service-worker.js",
         "type": "module"
     },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
     "content_scripts": [
         {
             "matches": [
@@ -27,7 +30,7 @@
             "js": [
                 "src/content/content-script.js"
             ],
-            "run_at": "document_start"
+            "run_at": "document_idle"
         }
     ]
 }

@@ -51,9 +51,9 @@ export class TextLocator {
         if (node.nodeType === Node.ELEMENT_NODE) {
             const tagName = node.tagName.toUpperCase();
 
-            // 1. Explicitly ignore infrastructure tags
-            // We must NOT pull text from scripts or styles.
-            if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK', 'META', 'HEAD', 'TITLE', 'SVG'].includes(tagName)) {
+            // 1. Explicitly ignore infrastructure tags and IFRAMES to prevent DOM exceptions
+            // We must NOT pull text from scripts or styles or cross-origin frames.
+            if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK', 'META', 'HEAD', 'TITLE', 'SVG', 'IFRAME', 'FRAME', 'OBJECT', 'EMBED'].includes(tagName)) {
                 return;
             }
 

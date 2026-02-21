@@ -116,11 +116,21 @@ async function runGuard(isSilent = false, specificNodes = null) {
     try {
         // Process nodes
         for (const node of targetNodes) {
-            // No DOM Evacuation needed. Scan the live node directly.
-            // This prevents layout thrashing and broken event listeners.
-            const nodeResults = await scanner.scanPage(node);
-            results.matches.push(...nodeResults.matches);
-            results.sanitizedCount += nodeResults.sanitizedCount;
+            if (!node) {
+                console.log("Surgical-Guard: Element not found yet, skipping scan");
+                continue;
+            }
+            console.log("Surgical-Guard: Found element:", node);
+
+            try {
+                // No DOM Evacuation needed. Scan the live node directly.
+                // This prevents layout thrashing and broken event listeners.
+                const nodeResults = await scanner.scanPage(node);
+                results.matches.push(...nodeResults.matches);
+                results.sanitizedCount += nodeResults.sanitizedCount;
+            } catch (err) {
+                console.error("Surgical-Guard: Scan failed on node:", err);
+            }
         }
 
         if (results.matches.length > 0) {
@@ -139,25 +149,45 @@ async function runGuard(isSilent = false, specificNodes = null) {
 
             const timestamp = new Date().toISOString();
 
-            chrome.runtime.sendMessage({
-                type: 'THREATS_DETECTED',
-                payload: {
-                    count: results.matches.length,
-                    matches: results.matches,
-                    context: {
-                        title: pageTitle,
-                        url: window.location.href,
-                        timestamp: timestamp
-                    }
+            if (chrome.runtime && chrome.runtime.sendMessage) {
+                try {
+                    chrome.runtime.sendMessage({
+                        type: 'THREATS_DETECTED',
+                        payload: {
+                            count: results.matches.length,
+                            matches: results.matches,
+                            context: {
+                                title: pageTitle,
+                                url: window.location.href,
+                                timestamp: timestamp
+                            }
+                        }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error("Surgical-Guard: Background error on THREATS_DETECTED:", chrome.runtime.lastError);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Surgical-Guard: Failed to send threats message:", e);
                 }
-            });
+            }
             console.groupEnd();
         } else {
             console.log("Surgical-Guard: No threats detected.");
-            chrome.runtime.sendMessage({
-                type: 'SAFE',
-                payload: { count: 0 }
-            });
+            if (chrome.runtime && chrome.runtime.sendMessage) {
+                try {
+                    chrome.runtime.sendMessage({
+                        type: 'SAFE',
+                        payload: { count: 0 }
+                    }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.error("Surgical-Guard: Background error on SAFE:", chrome.runtime.lastError);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Surgical-Guard: Failed to send safe message:", e);
+                }
+            }
         }
 
     } catch (e) {
