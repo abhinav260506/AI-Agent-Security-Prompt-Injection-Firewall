@@ -57,6 +57,19 @@ export class TextLocator {
                 return;
             }
 
+            // 1.5. IMPORTANT: Skip already sanitized nodes to prevent infinite loops!
+            // Without this, the scanner reads our own warning banners (which contain the original malicious text)
+            // and re-triggers SemanticGuard, causing an endless nesting of <span> tags.
+            if (node.hasAttribute && node.hasAttribute('data-surgical-scanned')) {
+                return;
+            }
+            if (node.hasAttribute && node.hasAttribute('data-surgical-sanitized')) {
+                return;
+            }
+            if (node.classList && node.classList.contains('surgical-guard-warning')) {
+                return;
+            }
+
             const style = window.getComputedStyle(node);
 
             // Previously we skipped all invisible nodes (display: none).

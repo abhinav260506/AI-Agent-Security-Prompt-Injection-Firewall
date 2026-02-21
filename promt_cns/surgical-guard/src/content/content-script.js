@@ -4,8 +4,9 @@ console.log("Surgical-Guard: Firewall Active");
 
 const scanner = new Scanner();
 
-// Flag to prevent MutationObserver loop
-let isSanitizing = false;
+// We no longer use a strict boolean lock for MutationObserver.
+// Instead, we rely on TextLocator skipping our own elements to prevent infinite loops.
+// let isSanitizing = false;
 
 // --- UI SHIELD LOGIC ---
 function createShield() {
@@ -85,8 +86,8 @@ async function runGuard(isSilent = false, specificNodes = null) {
         createShield();
     }
 
-    // Prevent observer from triggering while we scan/sanitize
-    isSanitizing = true;
+    // We no longer lock the observer during async analysis
+    // isSanitizing = true;
 
     // Scope detection:
     let targetNodes = [];
@@ -167,10 +168,10 @@ async function runGuard(isSilent = false, specificNodes = null) {
             removeShield();
         }
 
-        // Release lock
-        setTimeout(() => {
-            isSanitizing = false;
-        }, 1000);
+        // Release lock logic removed as we want concurrent async scanning
+        // setTimeout(() => {
+        //     isSanitizing = false;
+        // }, 1000);
     }
 
     return results; // Return for popup handling
@@ -225,7 +226,7 @@ let pendingMutations = new Set(); // Store Nodes that changed
 
 const observer = new MutationObserver((mutations) => {
     try {
-        if (!isScanningActive || isSanitizing) return;
+        if (!isScanningActive) return;
 
         let shouldDebounce = false;
 

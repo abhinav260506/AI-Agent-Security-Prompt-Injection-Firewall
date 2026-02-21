@@ -10,7 +10,7 @@
     "name": "DirectiveScanner"
   },
   "content-script.js-loader.js": {
-    "file": "assets/content-script.js-loader-T9tEx8y6.js",
+    "file": "assets/content-script.js-loader-DSFYA09P.js",
     "src": "content-script.js-loader.js"
   },
   "index.html": {
@@ -32,7 +32,7 @@
     ]
   },
   "src/content/content-script.js": {
-    "file": "assets/content-script.js-KnjhCiEz.js",
+    "file": "assets/content-script.js-DcIoxruY.js",
     "name": "content-script.js",
     "src": "src/content/content-script.js",
     "isEntry": true,
