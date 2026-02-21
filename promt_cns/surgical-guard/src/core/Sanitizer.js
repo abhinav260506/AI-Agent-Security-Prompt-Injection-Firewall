@@ -25,13 +25,13 @@ export const Sanitizer = {
                 // Or frankly, the entire segment is replacing the directive anyway.
                 // We'll replace the full match with the warning.
                 if (sanitizedText.includes(finding.match)) {
-                    sanitizedText = sanitizedText.replace(finding.match, warningMsg);
+                    sanitizedText = sanitizedText.replace(finding.match, `${warningMsg} ${finding.match}`);
                 }
             }
             else if (finding.type === 'ROLE_CONFLICT') {
                 const warningMsg = ` [🚫 BLOCKED: Context Hijacking (${finding.context}) ] `;
                 if (sanitizedText.includes(finding.match)) {
-                    sanitizedText = sanitizedText.replace(finding.match, warningMsg);
+                    sanitizedText = sanitizedText.replace(finding.match, `${warningMsg} ${finding.match}`);
                 }
             }
         });
@@ -90,7 +90,8 @@ export const Sanitizer = {
             // If a range is flagged as a Malicious Directive or Context Hijack, 
             // we must replace the *entire* instruction block with the warning banner.
             // Previously, it would only mask emails but keep the malicious command readable!
-            span.textContent = warningText;
+            // Now adding original text back so it shows as red highlighted.
+            span.textContent = `${warningText} ${originalText}`;
 
             // Sanitize: Delete content and insert new span
             range.deleteContents();
@@ -134,8 +135,9 @@ export const Sanitizer = {
      */
     sanitizeNode(node, finding) {
         if (finding.type === 'HIDDEN_TEXT') {
-            // Delete the original hidden instruction so AI tools cannot read it
-            node.textContent = "[ 🚫 Hidden Prompt Injection Neutralized ]";
+            const originalText = node.textContent;
+            // Overwrite node but keep original text visible for user as warning
+            node.textContent = `[ 🚫 Hidden Prompt Injection Neutralized ] ${originalText}`;
 
             node.style.display = 'block';
             node.style.visibility = 'visible';
